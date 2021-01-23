@@ -39,3 +39,4 @@ out/
 /volumes/*
 !/volumes/a-shared/public/.keep
 !/volumes/bitnami/.keep
+!/build/libs/jwt-sample.war
