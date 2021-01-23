@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+  web:
+    image: eu.gcr.io/rdx-net-public-registry/apache24-tomcat9-bitnami:latest
+    build:
+      context: .
+    ports:
+      - '8080:8080' # Apache - this will be the public access point
+      - '8081:8081' # Tomcat - direct access only for debug purposes
+    volumes:
+      - type: bind
+        source: ./volumes/bitnami
+        target: /bitnami
+      - type: bind
+        source: ./volumes/a-shared
+        target: /a/shared
+      - type: bind
+        source: ./volumes/a-conf
+        target: /a/conf
+
+networks:
+  default:
+    external:
+      name: purasu-local

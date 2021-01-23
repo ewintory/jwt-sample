@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+_term() {
+  echo "killing apache"
+  kill -WINCH "${apache_pid}" || true
+  wait "${apache_pid}"
+  echo "apache killed"
+
+  echo "killing tomcat"
+  kill "${tomcat_pid}" || true
+  wait "${tomcat_pid}"
+  echo "tomcat exited"
+
+  echo "killing tail"
+  kill "${tail_pid}" || true
+  wait "${tail_pid}"
+  echo "tail exited"
+  echo "exiting"
+
+  exit 0
+}
+
+_out() {
+  echo "Entrypoint: $*"
+}
+
+trap "_term" TERM
+
+_out "BEGIN"
+
+if [[ -f /etc/msmtprc ]]; then
+  msmtp-configure
+fi
+
+_out "Start Apache"
+apachectl -DFOREGROUND &
+apache_pid=$!
+
+_out "Start Tomcat"
+# /usr/libexec/tomcat9/tomcat-start.sh &
+/opt/bitnami/scripts/tomcat/entrypoint.sh /opt/bitnami/scripts/tomcat/run.sh &
+tomcat_pid=$!
+
+_out "Waiting for signals .."
+tail -f /dev/null &
+tail_pid=$!
+wait ${tail_pid}
